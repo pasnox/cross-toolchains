@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. build-constants.sh
+. build-constants.sh no-export
 
 if [ ! -d "${1}" ]; then
     echo "Please give the Qt sources folder to build as first parameter."
