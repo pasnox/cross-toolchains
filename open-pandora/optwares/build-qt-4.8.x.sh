@@ -43,8 +43,8 @@ echo "LIBS *= -ldbus-1" >> "config.tests/unix/dbus/dbus.pro"
 -platform linux-g++-64 \
 -prefix "${CROSS_DEVICE_OPTWARES_PATH}/../Qt/${QT_VERSION}" \
 -opensource \
--confirm-license
-# && make -j 4 \
-# && make install
+-confirm-license \
+&& make -j 4 \
+&& make install
 
 cd "${CUR_PWD}"
