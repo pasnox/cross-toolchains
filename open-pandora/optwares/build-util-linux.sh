@@ -14,7 +14,7 @@ cd "${1}"
 ./configure \
 --host="${CROSS_DEVICE_VENDOR}" \
 --prefix="${CROSS_DEVICE_OPTWARES_PATH}" \
---disable-shared \
+--enable-shared \
 --enable-static \
 --disable-mount \
 --disable-losetup \
@@ -44,7 +44,7 @@ cd "${1}"
 --disable-makeinstall-chown \
 --disable-makeinstall-setuid \
 && \
-make V=1 -j 6 \
+make V=1 -j ${CROSS_MAKE_JOBS} \
 && \
 make install
 
