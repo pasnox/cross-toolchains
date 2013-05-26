@@ -35,16 +35,16 @@ echo "LIBS *= -ldbus-1" >> "config.tests/unix/dbus/dbus.pro"
 -nomake examples \
 -nomake demos \
 -make tools \
+-make docs \
 -fast \
 -no-pch \
 -no-qt3support \
--no-webkit \
 -opengl es2 \
 -platform linux-g++-64 \
 -prefix "${CROSS_DEVICE_OPTWARES_PATH}/../Qt/${QT_VERSION}" \
 -opensource \
 -confirm-license \
-&& make -j 4 \
+&& make -j ${CROSS_MAKE_JOBS} \
 && make install
 
 cd "${CUR_PWD}"
