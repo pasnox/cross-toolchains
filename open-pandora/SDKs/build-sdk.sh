@@ -27,59 +27,65 @@ function patchPrefix()
     if [ ! -f "$1" ]; then
         return
     fi
-    
+
     # Do not process symbolic links
     if [ -L "$1" ]; then
         return
     fi
-    
+
     # Prepend new prefix to prefix
     prefix="$2"
-    
+
     if [ ! "${prefix:0:1}" = "/" ]; then
         prefix="$PWD/$2"
     fi
-    
+
     # Set prefix to /usr for empty prefix
     sed -e 's#^prefix=$#prefix=/usr#1' "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^prefix=/usr#prefix=\"$prefix\"/usr#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^prefix=/lib#prefix=\"$prefix\"/lib#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^exec_prefix=/usr#exec_prefix=\"$prefix\"/usr#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^exec_prefix=/lib#exec_prefix=\"$prefix\"/lib#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^includedir=/usr#includedir=\"$prefix\"/usr#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^includedir=/lib#includedir=\"$prefix\"/lib#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^libdir=/usr#libdir=\"$prefix\"/usr#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#^libdir=/lib#libdir=\"$prefix\"/lib#1" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
+    sed -e "s#^libdir=/lib#libdir=\"$prefix\"/lib#1" "$1" > "$1".new
+    mv "$1".new "$1"
+
+    sed -e "s#^libdir='/usr#libdir='\"$prefix\"/usr#1" "$1" > "$1".new
+    mv "$1".new "$1"
+
     sed -e "s#-L/usr#-L\"$prefix\"/usr#g" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#-L/lib#-L\"$prefix\"/lib#g" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#-I/usr#-I\"$prefix\"/usr#g" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     sed -e "s#-I/lib#-I\"$prefix\"/lib#g" "$1" > "$1".new
     mv "$1".new "$1"
-    
+
     if [ "$3" = "1" ]; then
         chmod +x "$1"
     fi
@@ -92,13 +98,13 @@ function fixRoot()
     if [ ! -f "$1" ]; then
         return
     fi
-    
+
     prefix="$2"
-    
+
     if [ ! "${prefix:0:1}" = "/" ]; then
         prefix="$PWD/$2"
     fi
-    
+
     sed -e "s# /usr/lib/# $prefix/usr/lib/#g" "$1" > "$1".new
     mv "$1".new "$1"
 
@@ -119,17 +125,17 @@ function remove()
 function resolveSymlink()
 {
     target="`readlink -n "$1"`"
-    
+
     if [ ! ${target:0:1} = "/" ]; then
         target="`dirname \"$1\"`/$target"
     elif [ ! ${target:0:${#OPENPANDORA_SDK_FS}} = "$OPENPANDORA_SDK_FS" ]; then
         target="$OPENPANDORA_SDK_FS$target"
     fi
-    
+
     if [ -L "$target" ]; then
         target=`resolveSymlink "$target"`
     fi
-    
+
     echo "`realpath -s \"$target\"`"
 }
 
@@ -142,11 +148,11 @@ function fixSymlinksRecursively()
         elif [ -L "$name" ]; then
             source="`realpath -s \"$name\"`"
             target=`resolveSymlink "$source"`
-            
+
             if [ "$source" = "$target" ]; then
                 continue;
             fi
-            
+
             if [ -f "$target" ]; then
                 rm "$source"
                 ln -s "$target" "$source"
@@ -176,24 +182,24 @@ for source in $INCLUDES_LIST $LIBS_LIST $PKG_CONFIG_LIST "$OPENPANDORA_ROOT_FS/"
     if [ -d "$OPENPANDORA_ROOT_FS/$source" ]; then
         source="$OPENPANDORA_ROOT_FS/$source"
     fi
-    
+
     if [ ! -d "$source" ] && [ ! -f "$source" ]; then
         echo " - Skip unexisting \"$source\"..."
         continue
     fi
-    
+
     target="$OPENPANDORA_SDK_FS/${source/$OPENPANDORA_ROOT_FS\//}"
-    
+
     if [ -f "$source" ]; then
         target=`dirname "$target"`
     fi
-    
+
     mkdir -p "$target"
-    
+
     if [ -d "$source" ]; then
         target=`dirname "$target"`
     fi
-    
+
     echo "+ Syncing \"$source\" to \"$target\"..."
     rsync -aE "$source" "$target"
 done
@@ -220,6 +226,11 @@ done
 # Patch ld scripts
 for source in $LD_SCRIPTS_LIST ; do
     fixRoot "$OPENPANDORA_SDK_FS/$source" "$OPENPANDORA_SDK_FS"
+done
+
+# fix libtool files
+for file in `find ${OPENPANDORA_SDK_FS} -name '*.la'` ; do
+    patchPrefix "$file" "$OPENPANDORA_SDK_FS"
 done
 
 fixSymlinksRecursively "$OPENPANDORA_SDK_FS"
