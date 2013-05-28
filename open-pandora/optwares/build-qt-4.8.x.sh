@@ -45,6 +45,6 @@ echo "LIBS *= -ldbus-1" >> "config.tests/unix/dbus/dbus.pro"
 -opensource \
 -confirm-license \
 && make -j ${CROSS_MAKE_JOBS} \
-&& make install
+&& make -j ${CROSS_MAKE_JOBS} install
 
 cd "${CUR_PWD}"

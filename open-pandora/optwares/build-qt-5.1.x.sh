@@ -54,6 +54,6 @@ echo "LIBS *= -lXau -lXdmcp" >> "qtbase/config.tests/qpa/xcb-xkb/xcb-xkb.pro"
 -qpa xcb \
 -opengl es2 \
 && make -j ${CROSS_MAKE_JOBS} \
-&& make install
+&& make -j ${CROSS_MAKE_JOBS} install
 
 cd "${CUR_PWD}"
