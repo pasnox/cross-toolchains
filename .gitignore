@@ -11,3 +11,8 @@
 *.lai
 *.la
 *.a
+
+# Archive files
+*.bz2
+*.xz
+*.tgz
